@@ -1,28 +1,33 @@
-name: Deploy AWS
+name: .NET 6 API CI
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-   
-    - name: Setup .NET Core
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
-    
-    - name: Install dependencies
+        dotnet-version: '6.0.x'
+
+    - name: Restore dependencies
       run: dotnet restore
-    
+
     - name: Build
-      run: dotnet build --configuration Release --no-restore
-    
-    - name: Test
+      run: dotnet build --configuration Release
+
+    - name: Run tests
       run: dotnet test --no-restore --verbosity normal
 
     - name: Publish
@@ -32,7 +37,10 @@ jobs:
       run: |
         cd ${{ github.workspace }}/out 
         zip -r ${{ github.workspace }}/out.zip *
-           
+      
+    
+      
+         
               
   deploy:
     needs: build
@@ -40,7 +48,7 @@ jobs:
 
     steps:
     - name: Configure AWS credentials
-      uses: einaregilsson/beanstalk-deploy@v13
+      uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -50,3 +58,8 @@ jobs:
         version_label: ${{ github.run_id}}
         version_description: ${{github.sha}}
         deployment_package: ${{github.workspace}}
+
+      
+    
+
+    
