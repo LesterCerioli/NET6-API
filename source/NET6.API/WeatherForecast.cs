@@ -1,4 +1,4 @@
-namespace APIModel
+namespace NET6.API
 {
     public class WeatherForecast
     {
